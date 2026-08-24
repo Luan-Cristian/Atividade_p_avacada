@@ -1,6 +1,3 @@
-"""
-Modelos de dados do Sistema Inteligente de Gestão e Otimização de Espaços Corporativos.
-"""
 from __future__ import annotations
 from typing import List, Optional
 from enum import Enum
@@ -34,7 +31,7 @@ class Sala(BaseModel):
     recursos: List[Recurso] = []
     acessibilidade: bool = False
     disponivel: bool = True
-    setor_reservado: Optional[str] = None  # id do setor, se a sala for exclusiva
+    setor_reservado: Optional[str] = None  
 
 
 class Setor(BaseModel):
@@ -53,8 +50,8 @@ class Equipe(BaseModel):
     recursos_obrigatorios: List[Recurso] = []
     acessibilidade_obrigatoria: bool = False
     andar_preferido: Optional[int] = None
-    prioridade: int = Field(default=3, ge=1, le=5)  # 1 = mais alta, 5 = mais baixa
-    proxima_de: List[str] = []  # ids de outras equipes que devem ficar próximas
+    prioridade: int = Field(default=3, ge=1, le=5)  
+    proxima_de: List[str] = []  
 
 
 class TipoRestricao(str, Enum):
@@ -74,5 +71,5 @@ class Restricao(BaseModel):
     descricao: str
     equipe_id: Optional[str] = None
     setor_id: Optional[str] = None
-    valor: Optional[str] = None  # payload livre (ex.: "4", "projetor", "setorA,setorB")
+    valor: Optional[str] = None 
     obrigatoria: bool = True

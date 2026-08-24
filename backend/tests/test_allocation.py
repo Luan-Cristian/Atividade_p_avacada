@@ -1,11 +1,3 @@
-"""
-Testes do motor de alocação.
-
-Inclui testes de propriedade/metamórficos (seção 15 do desafio), já que
-não conhecemos de antemão qual é a alocação ótima para dezenas de
-equipes/salas/restrições -- então testamos RELAÇÕES esperadas entre
-entradas e saídas, em vez de comparar contra um "gabarito" fixo.
-"""
 import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -42,9 +34,6 @@ def _cenario_base():
     return salas, setores, equipes, restricoes
 
 
-# --------------------------------------------------------------------------
-# Teste 1 — Capacidade: nenhuma sala pode receber mais pessoas que sua capacidade
-# --------------------------------------------------------------------------
 def test_capacidade_nunca_e_excedida():
     salas, setores, equipes, restricoes = _cenario_base()
     resultado = gerar_alocacao(salas, setores, equipes, restricoes, execucao_id=1)
@@ -59,11 +48,10 @@ def test_capacidade_nunca_e_excedida():
 
 
 def test_equipe_12_pessoas_nao_vai_para_sala_de_80_se_existe_sala_de_15():
-    """Caso ilustrativo do próprio enunciado (seção 4)."""
     salas, setores, _, restricoes = _cenario_base()
     equipes = [_equipe("e1", "tec", 12)]
     resultado = gerar_alocacao(salas, setores, equipes, restricoes, execucao_id=1)
-    assert resultado.alocacoes[0].sala_id == "s1"  # a sala de 15, não a de 80
+    assert resultado.alocacoes[0].sala_id == "s1"  
 
 
 def test_equipe_60_pessoas_nao_e_colocada_em_sala_de_40():
@@ -71,16 +59,11 @@ def test_equipe_60_pessoas_nao_e_colocada_em_sala_de_40():
     setores = [Setor(id="tec", nome="Tecnologia", coordenador="Ana", total_funcionarios=60)]
     equipes = [_equipe("e1", "tec", 60)]
     resultado = gerar_alocacao(salas, setores, equipes, [], execucao_id=1)
-    # nenhuma sala comporta 60 pessoas -> deve virar exceção, nunca uma alocação inválida
     assert len(resultado.alocacoes) == 0
     assert len(resultado.excecoes) == 1
     assert resultado.excecoes[0].equipe_id == "e1"
 
 
-# --------------------------------------------------------------------------
-# Teste 2 — Expansão da capacidade: adicionar uma sala não deve diminuir
-# a quantidade de equipes alocáveis
-# --------------------------------------------------------------------------
 def test_metamorfico_adicionar_sala_nao_piora_alocacao():
     salas, setores, equipes, restricoes = _cenario_base()
     resultado_original = gerar_alocacao(salas, setores, equipes, restricoes, execucao_id=1)
@@ -92,9 +75,6 @@ def test_metamorfico_adicionar_sala_nao_piora_alocacao():
     assert len(resultado_expandido.excecoes) <= len(resultado_original.excecoes)
 
 
-# --------------------------------------------------------------------------
-# Teste 3 — Remoção de restrição: o espaço de soluções não deve encolher
-# --------------------------------------------------------------------------
 def test_metamorfico_remover_restricao_nao_piora_alocacao():
     salas, setores, equipes, _ = _cenario_base()
     restricao_andar = Restricao(
@@ -109,10 +89,7 @@ def test_metamorfico_remover_restricao_nao_piora_alocacao():
     assert len(resultado_sem_restricao.excecoes) <= len(resultado_com_restricao.excecoes)
 
 
-# --------------------------------------------------------------------------
-# Teste 4 — Equipes equivalentes: renomear uma equipe não deve alterar
-# drasticamente a qualidade global da solução
-# --------------------------------------------------------------------------
+
 def test_metamorfico_renomear_equipe_mantem_qualidade():
     salas, setores, equipes, restricoes = _cenario_base()
     resultado_original = gerar_alocacao(salas, setores, equipes, restricoes, execucao_id=1)
@@ -127,13 +104,10 @@ def test_metamorfico_renomear_equipe_mantem_qualidade():
     assert ocupacao_media_original == pytest.approx(ocupacao_media_renomeado, rel=0.01)
 
 
-# --------------------------------------------------------------------------
-# Teste 5 — Exceções nunca viram alocações inválidas (não "escondem o problema")
-# --------------------------------------------------------------------------
 def test_equipe_maior_que_todas_as_salas_gera_excecao_com_causa():
     salas = [_sala("s1", 1, 10)]
     setores = [Setor(id="tec", nome="Tecnologia", coordenador="Ana", total_funcionarios=92)]
-    equipes = [_equipe("delta", "tec", 92)]  # exemplo do próprio enunciado (seção 11)
+    equipes = [_equipe("delta", "tec", 92)] 
     resultado = gerar_alocacao(salas, setores, equipes, [], execucao_id=1)
 
     assert len(resultado.alocacoes) == 0
@@ -144,9 +118,6 @@ def test_equipe_maior_que_todas_as_salas_gera_excecao_com_causa():
     assert excecao.encaminhamento_sugerido
 
 
-# --------------------------------------------------------------------------
-# Teste 6 — Restrição de acessibilidade obrigatória é sempre respeitada
-# --------------------------------------------------------------------------
 def test_restricao_acessibilidade_obrigatoria_e_respeitada():
     salas = [
         _sala("s1", 1, 20, acessibilidade=False),
@@ -161,7 +132,6 @@ def test_restricao_acessibilidade_obrigatoria_e_respeitada():
 
 
 def test_execucao_e_rapida():
-    """Critério de aceitação: recomendação dentro de um limite de tempo (ex.: 5s)."""
     salas, setores, equipes, restricoes = _cenario_base()
     resultado = gerar_alocacao(salas, setores, equipes, restricoes, execucao_id=1)
     assert resultado.tempo_execucao_s < 5.0

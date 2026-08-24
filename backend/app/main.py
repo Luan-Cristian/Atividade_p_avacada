@@ -26,7 +26,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Guarda a última alocação "otimizada" e a alocação inicial (simples) para a tela de comparação
 _ultima_otimizada: Optional[ResultadoAlocacao] = None
 _alocacao_inicial: Optional[ResultadoAlocacao] = None
 
@@ -90,10 +89,7 @@ def remover_restricao(restricao_id: str):
     return {"ok": True}
 
 
-# ---------------------------------------------------------- motor de alocação
 def _alocacao_inicial_simples() -> ResultadoAlocacao:
-    """Simula a 'situação inicial' (alocação simples/manual) só pela ordem de
-    cadastro, sem otimização de score, para servir de baseline na comparação."""
     salas, setores, equipes, restricoes = storage.snapshot()
     salas_ocupadas = set()
     alocacoes: List[Alocacao] = []
@@ -142,7 +138,6 @@ def gerar_alocacao_endpoint(usuario: str = "coordenador-geral"):
     resultado = gerar_alocacao(salas, setores, equipes, restricoes, exec_id)
     _ultima_otimizada = resultado
 
-    # Governança: registrar execução
     registro = {
         "execucao_id": resultado.execucao_id,
         "data_hora": resultado.timestamp,
@@ -158,7 +153,6 @@ def gerar_alocacao_endpoint(usuario: str = "coordenador-geral"):
     }
     storage.execucoes.append(registro)
 
-    # Observabilidade
     storage.metricas_observabilidade.append({
         "execucao_id": resultado.execucao_id,
         "tempo_s": resultado.tempo_execucao_s,
@@ -199,7 +193,6 @@ def justificativa(equipe_id: str):
     raise HTTPException(404, "Equipe não encontrada na última execução")
 
 
-# ------------------------------------------------------------- intervenção
 @app.post("/alocacao/intervencao")
 def registrar_intervencao(req: IntervencaoRequest):
     if _ultima_otimizada is None:
@@ -230,7 +223,6 @@ def registrar_intervencao(req: IntervencaoRequest):
     return {"ok": True, "registro": registro}
 
 
-# --------------------------------------------------------------- dashboard
 @app.get("/dashboard")
 def dashboard():
     salas = list(storage.salas.values())
@@ -305,7 +297,6 @@ def comparacao():
     return {"antes": resumo(_alocacao_inicial), "depois": resumo(_ultima_otimizada)}
 
 
-# ------------------------------------------------------------- governança
 @app.get("/governanca/execucoes")
 def listar_execucoes():
     return storage.execucoes
@@ -316,7 +307,6 @@ def listar_intervencoes():
     return storage.intervencoes
 
 
-# ----------------------------------------------------------- observabilidade
 @app.get("/observabilidade")
 def observabilidade():
     metricas = storage.metricas_observabilidade

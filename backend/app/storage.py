@@ -1,7 +1,3 @@
-"""
-Armazenamento em memória (adequado para o protótipo/MVP).
-Troca-se facilmente por um banco real (Postgres/SQLite) mantendo a mesma interface.
-"""
 from __future__ import annotations
 from typing import List, Dict
 import random
@@ -15,8 +11,8 @@ class Storage:
         self.setores: Dict[str, Setor] = {}
         self.equipes: Dict[str, Equipe] = {}
         self.restricoes: Dict[str, Restricao] = {}
-        self.execucoes: List[dict] = []  # log de governança
-        self.intervencoes: List[dict] = []  # log de intervenções humanas
+        self.execucoes: List[dict] = []  
+        self.intervencoes: List[dict] = []  
         self.metricas_observabilidade: List[dict] = []
         self._exec_counter = 0
         self._seed()
@@ -25,7 +21,6 @@ class Storage:
         self._exec_counter += 1
         return self._exec_counter
 
-    # ---------------------------------------------------------------- seed
     def _seed(self) -> None:
         random.seed(42)
         setores_info = [
@@ -83,7 +78,6 @@ class Storage:
                 )
             self.setores[sid].total_funcionarios = total
 
-        # Algumas restrições ilustrativas
         self.restricoes["r1"] = Restricao(
             id="r1", tipo=TipoRestricao.SEPARACAO_SETORES,
             descricao="Jurídico e Comercial não podem compartilhar a mesma sala",
@@ -97,7 +91,6 @@ class Storage:
         if "sala-101" in self.salas:
             self.salas["sala-101"].setor_reservado = "juridico"
 
-    # ------------------------------------------------------------- helpers
     def snapshot(self):
         return (
             list(self.salas.values()),

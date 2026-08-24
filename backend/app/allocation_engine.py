@@ -1,25 +1,3 @@
-"""
-Motor de alocação: heurística gulosa com scoring multi-critério.
-
-Abordagem (documentada para explicabilidade e para a demonstração final):
-1. Ordena as equipes por prioridade (1 = mais alta) e, em caso de empate,
-   pelas equipes maiores primeiro (equipes grandes têm menos salas candidatas
-   compatíveis, então alocá-las primeiro reduz conflitos).
-2. Para cada equipe, filtra as salas que atendem restrições OBRIGATÓRIAS:
-   capacidade >= funcionários, acessibilidade (se exigida), recursos
-   obrigatórios, andar permitido, sala reservada para outro setor.
-3. Entre as salas candidatas, calcula um score = combinação ponderada de:
-      - eficiência de ocupação (quanto mais perto de 100% sem estourar, melhor)
-      - atendimento de preferência de andar
-      - proximidade com equipes relacionadas já alocadas
-      - penalidade por violar restrições NÃO obrigatórias (soft constraints)
-4. Escolhe a sala de maior score, aloca e passa para a próxima equipe.
-5. Equipes sem nenhuma sala candidata compatível viram uma EXCEÇÃO, com
-   causa e encaminhamento sugerido — nunca uma alocação inválida.
-
-Não é ótimo global (não é um solver exato), mas é determinístico,
-rápido e 100% explicável — adequado para o escopo de um MVP de uma semana.
-"""
 from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional
@@ -29,7 +7,6 @@ from .models import Sala, Setor, Equipe, Restricao, TipoRestricao
 
 ENGINE_VERSION = "allocation-engine-v1"
 
-# Pesos da função de score (documentados para explicabilidade)
 PESO_OCUPACAO = 0.5
 PESO_ANDAR_PREFERIDO = 0.2
 PESO_PROXIMIDADE = 0.2
@@ -87,7 +64,6 @@ def _restricoes_da_equipe(equipe: Equipe, restricoes: List[Restricao]) -> List[R
 def _sala_atende_obrigatorias(
     sala: Sala, equipe: Equipe, restricoes_equipe: List[Restricao]
 ) -> tuple[bool, Optional[str], Optional[str]]:
-    """Retorna (atende, causa_se_nao_atender, restricao_nao_atendida)."""
     if not sala.disponivel:
         return False, "Sala indisponível no momento", "disponibilidade"
 
@@ -115,9 +91,7 @@ def _sala_atende_obrigatorias(
             if sala.andar not in andares_permitidos:
                 return False, f"Andar {sala.andar} fora dos andares permitidos ({r.valor})", "andar_permitido"
         if r.tipo == TipoRestricao.SEPARACAO_SETORES and r.valor:
-            # valor no formato "setorA,setorB" -- não podem compartilhar a mesma sala/área
-            pass  # aplicado de forma agregada após a alocação (ver validar_restricoes_globais)
-
+            pass 
     return True, None, None
 
 
@@ -128,8 +102,7 @@ def _score_sala(
     salas_por_id: Dict[str, Sala],
 ) -> float:
     ocupacao = equipe.quantidade_funcionarios / sala.capacidade
-    # ocupação ideal é alta mas sem estourar; penaliza excesso de folga
-    score_ocupacao = ocupacao  # já está entre (0,1]
+    score_ocupacao = ocupacao 
 
     score_andar = 1.0 if (
         equipe.andar_preferido is None or equipe.andar_preferido == sala.andar
@@ -144,9 +117,9 @@ def _score_sala(
             mesmos_andar = sum(1 for a in relacionadas_alocadas if a.andar == sala.andar)
             score_proximidade = mesmos_andar / len(relacionadas_alocadas)
         else:
-            score_proximidade = 0.5  # neutro: ainda não há referência
+            score_proximidade = 0.5  
 
-    penalidade_soft = 0.0  # reservado para extensões futuras (restrições não obrigatórias)
+    penalidade_soft = 0.0 
 
     return (
         PESO_OCUPACAO * score_ocupacao
@@ -165,7 +138,6 @@ def gerar_alocacao(
 ) -> ResultadoAlocacao:
     inicio = time.time()
 
-    # 1. Ordenação: prioridade asc, depois tamanho da equipe desc
     equipes_ordenadas = sorted(
         equipes, key=lambda e: (e.prioridade, -e.quantidade_funcionarios)
     )
@@ -191,7 +163,6 @@ def gerar_alocacao(
                 causas_rejeicao.append((causa, tipo_restricao))
 
         if not candidatas:
-            # Determina a causa mais provável (a mais frequente entre as rejeições)
             if causas_rejeicao:
                 causa_principal, tipo_r = causas_rejeicao[0]
             else:
@@ -213,7 +184,6 @@ def gerar_alocacao(
             ))
             continue
 
-        # 2. Scoring das candidatas
         scored = [
             (sala, _score_sala(sala, equipe, alocacoes, salas_disponiveis))
             for sala in candidatas
@@ -295,7 +265,6 @@ def validar_restricoes_globais(
                 if len(setores_na_sala & setores_proibidos) > 1:
                     violacoes += 1
 
-    # Checagem de segurança: nenhuma alocação pode exceder a capacidade da sala
     for a in alocacoes:
         if a.pessoas > a.capacidade:
             violacoes += 1

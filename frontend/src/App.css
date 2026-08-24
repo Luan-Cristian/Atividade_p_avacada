@@ -4,7 +4,6 @@
   flex-direction: column;
 }
 
-/* ---------------------------------------------------------------- topbar */
 .topbar {
   display: flex;
   align-items: center;
@@ -63,7 +62,6 @@
   border-color: rgba(238, 241, 244, 0.25);
 }
 
-/* ---------------------------------------------------------------- layout */
 .content {
   flex: 1;
   padding: 32px;
@@ -122,7 +120,6 @@ h1 {
   width: fit-content;
 }
 
-/* ---------------------------------------------------------------- panel */
 .panel {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -142,7 +139,6 @@ h1 {
   .grid-2 { grid-template-columns: 1fr; }
 }
 
-/* -------------------------------------------------------------------KPI */
 .kpi-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -182,7 +178,6 @@ h1 {
 
 .kpi-suffix { font-size: 14px; color: var(--ink-soft); margin-left: 2px; }
 
-/* --------------------------------------------------------- floor stack */
 .floorstack {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -274,7 +269,6 @@ h1 {
 .detail-list dt { color: var(--ink-soft); font-size: 13px; }
 .detail-list dd { margin: 0; font-size: 13px; }
 
-/* --------------------------------------------------------------- table */
 th {
   text-align: left;
   font-size: 11px;
@@ -305,7 +299,6 @@ tr.is-selected td { background: var(--accent-soft); }
   flex-wrap: wrap;
 }
 
-/* -------------------------------------------------------------- buttons */
 .btn-primary {
   background: var(--ink);
   color: #eef1f4;
@@ -357,7 +350,6 @@ tr.is-selected td { background: var(--accent-soft); }
 
 .input-inline { width: 80px; }
 
-/* -------------------------------------------------------------- banners */
 .banner-error {
   background: var(--alert-soft);
   color: var(--alert);
