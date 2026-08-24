@@ -149,7 +149,7 @@ decisão final é sempre humana.
 ## Limitações conhecidas (transparência)
 
 - Armazenamento em memória (reinicia ao reiniciar o backend) — adequado para
-  o protótipo de uma semana; troca para banco persistente é isolada em `storage.py`.
+  o protótipo de curto prazo; troca para banco persistente é isolada em `storage.py`.
 - A heurística é gulosa, não um solver de otimização exato — pode não achar
   o ótimo global, mas é rápida, determinística e 100% explicável.
 - Autenticação/perfis de usuário não foram implementados (fora do escopo do MVP).
