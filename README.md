@@ -37,6 +37,32 @@ cd backend
 python -m pytest tests/ -v
 ```
 
+## Metodologia: Spec-Driven Development e sub-agentes
+
+Este projeto segue **Spec-Driven Development (SDD)**: a especificação é a
+fonte da verdade, e cada decisão de design e cada tarefa remetem a um
+requisito documentado.
+
+- [`specs/requirements.md`](specs/requirements.md) — requisitos funcionais e não funcionais, perfis de usuário, critérios de aceitação (fonte da verdade do projeto).
+- [`specs/design.md`](specs/design.md) — decisões de arquitetura derivadas dos requisitos, incluindo alternativas consideradas e descartadas (ex.: por que uma heurística e não ML/solver exato).
+- [`specs/tasks.md`](specs/tasks.md) — tarefas de implementação, cada uma rastreável a um ou mais requisitos, com status.
+
+Além disso, o projeto define **sub-agentes do Claude Code** em
+[`.claude/agents/`](.claude/agents/) — assistentes especializados que só são
+acionados quando o projeto é aberto via Claude Code (terminal ou app
+desktop), não neste chat:
+
+| Sub-agente | Responsabilidade |
+|---|---|
+| `backend-architect` | mudanças em `backend/app/*.py` (modelos, motor de alocação, API) |
+| `frontend-builder` | mudanças em `frontend/src/*` (componentes, estilo, integração com a API) |
+| `test-writer` | testes automatizados, incluindo os testes metamórficos |
+| `devops-engineer` | pipeline de CI/CD e instrumentação de governança/observabilidade |
+
+Cada sub-agente é instruído a ler `specs/requirements.md` e `specs/design.md`
+antes de alterar código, e a manter `specs/tasks.md` atualizado — fechando o
+ciclo entre especificação, execução por IA e rastreabilidade.
+
 ## Arquitetura e decisões principais
 
 - **Dados fictícios (seed)**: ao subir, o backend gera ~7.000 funcionários
@@ -149,7 +175,7 @@ decisão final é sempre humana.
 ## Limitações conhecidas (transparência)
 
 - Armazenamento em memória (reinicia ao reiniciar o backend) — adequado para
-  o protótipo de curto prazo; troca para banco persistente é isolada em `storage.py`.
+  o protótipo de uma semana; troca para banco persistente é isolada em `storage.py`.
 - A heurística é gulosa, não um solver de otimização exato — pode não achar
   o ótimo global, mas é rápida, determinística e 100% explicável.
 - Autenticação/perfis de usuário não foram implementados (fora do escopo do MVP).
